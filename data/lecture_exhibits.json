@@ -1,0 +1,195 @@
+{
+ "factors": {
+  "E1": {
+   "betas": {
+    "SPX": [
+     0.03,
+     0.9
+    ],
+    "BTC": [
+     -0.0,
+     -0.4
+    ],
+    "Gold": [
+     -0.02,
+     -0.8
+    ],
+    "Coal": [
+     -0.01,
+     -0.7
+    ]
+   },
+   "R2": 0.01,
+   "alpha_wk%": 0.109
+  },
+  "CTA": {
+   "betas": {
+    "SPX": [
+     -0.14,
+     -2.9
+    ],
+    "BTC": [
+     0.01,
+     0.6
+    ],
+    "Gold": [
+     0.13,
+     2.9
+    ],
+    "Coal": [
+     0.03,
+     2.4
+    ]
+   },
+   "R2": 0.07,
+   "alpha_wk%": 0.02
+  },
+  "IDX": {
+   "betas": {
+    "SPX": [
+     0.03,
+     0.3
+    ],
+    "BTC": [
+     0.08,
+     2.9
+    ],
+    "Gold": [
+     0.38,
+     4.5
+    ],
+    "Coal": [
+     0.07,
+     3.7
+    ]
+   },
+   "R2": 0.17,
+   "alpha_wk%": 0.257
+  },
+  "Wheel": {
+   "betas": {
+    "SPX": [
+     0.16,
+     2.1
+    ],
+    "BTC": [
+     0.47,
+     21.8
+    ],
+    "Gold": [
+     -0.02,
+     -0.3
+    ],
+    "Coal": [
+     0.02,
+     1.6
+    ]
+   },
+   "R2": 0.66,
+   "alpha_wk%": 0.155
+  },
+  "BOOK": {
+   "betas": {
+    "SPX": [
+     0.01,
+     0.2
+    ],
+    "BTC": [
+     0.09,
+     9.9
+    ],
+    "Gold": [
+     0.11,
+     4.0
+    ],
+    "Coal": [
+     0.02,
+     3.7
+    ]
+   },
+   "R2": 0.37,
+   "alpha_wk%": 0.141
+  }
+ },
+ "vares": {
+  "E1": {
+   "VaR_hist%": 2.73,
+   "ES_hist%": 3.73,
+   "VaR_evt%": 3.02,
+   "ES_evt%": 3.74,
+   "xi": -0.06
+  },
+  "CTA": {
+   "VaR_hist%": 4.9,
+   "ES_hist%": 6.22,
+   "VaR_evt%": 4.91,
+   "ES_evt%": 6.28,
+   "xi": 0.03
+  },
+  "IDX": {
+   "VaR_hist%": 7.64,
+   "ES_hist%": 8.3,
+   "VaR_evt%": 7.66,
+   "ES_evt%": 8.19,
+   "xi": -0.53
+  },
+  "Wheel": {
+   "VaR_hist%": 15.86,
+   "ES_hist%": 20.84,
+   "VaR_evt%": 15.85,
+   "ES_evt%": 21.96,
+   "xi": 0.12
+  },
+  "BOOK": {
+   "VaR_hist%": 4.16,
+   "ES_hist%": 4.88,
+   "VaR_evt%": 3.42,
+   "ES_evt%": 5.91,
+   "xi": 0.45
+  }
+ },
+ "eg": {
+  "ADRO.JK vs BTU": {
+   "coint_p": 0.949,
+   "half_life_days": ">500",
+   "beta": 0.39
+  },
+  "PTBA.JK vs BTU": {
+   "coint_p": 0.827,
+   "half_life_days": 312.0,
+   "beta": 0.24
+  },
+  "ITMG.JK vs BTU": {
+   "coint_p": 0.788,
+   "half_life_days": 325.0,
+   "beta": 0.49
+  },
+  "BYAN.JK vs BTU": {
+   "coint_p": 0.725,
+   "half_life_days": ">500",
+   "beta": 0.55
+  },
+  "ANTM.JK vs Gold": {
+   "coint_p": 0.19,
+   "half_life_days": 153.0,
+   "beta": 1.4
+  },
+  "MDKA.JK vs Gold": {
+   "coint_p": 0.888,
+   "half_life_days": 497.0,
+   "beta": 1.47
+  }
+ },
+ "e1_diag": {
+  "names": 34,
+  "adf_reject%": 100.0,
+  "hl_median_d": 5.4,
+  "hl_p25_d": 5.1,
+  "hl_p75_d": 6.0,
+  "hl_le30%": 100.0
+ },
+ "cta_ewma": {
+  "sharpe_full": 0.33,
+  "ret_2022%": 16.6
+ }
+}

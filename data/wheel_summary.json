@@ -1,0 +1,39 @@
+{
+ "metrics": {
+  "wheel": {
+   "sharpe": 0.48,
+   "cagr%": 17.37,
+   "vol%": 36.13,
+   "max_dd%": -63.29,
+   "final$": 180966
+  },
+  "wheel_always": {
+   "sharpe": 0.65,
+   "cagr%": 21.02,
+   "vol%": 32.43,
+   "max_dd%": -43.42,
+   "final$": 239591
+  },
+  "bh": {
+   "sharpe": 0.38,
+   "cagr%": 20.58,
+   "vol%": 54.26,
+   "max_dd%": -74.25,
+   "final$": 139004
+  }
+ },
+ "trade_stats": {
+  "puts_sold": 27,
+  "puts_assigned": 5,
+  "calls_sold": 16,
+  "calls_away": 5,
+  "premium": 81027.5632625033
+ },
+ "trade_stats_always": {
+  "puts_sold": 143,
+  "puts_assigned": 26,
+  "calls_sold": 146,
+  "calls_away": 26,
+  "premium": 475856.78860154154
+ }
+}
