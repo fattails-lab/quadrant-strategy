@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Quadrant Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Baloo+2:wght@700;800&display=block" rel="stylesheet">
+<!-- Follows the submitted 28 Oct deck (QF5210_Submission_2026-10-28/slides/QF5210_Presentation_Slides.pdf)
+     slide for slide. 31 Oct book: E1 / dip / short IDR / wheel 20/15/15/50; the commodity sleeve replaced by short IDR;
+     to Jan 2025, then 70/30 HYPE/BTC. Numbers: outputs/book/deck_stats.json, sleeve summaries, scripts/evaluate_window.py. -->
+<style>
+  @page { size: 960px 540px; margin: 0; }
+  :root { --navy: #1F3864; --ink: #262626; --grey: #6b6b6b; --zebra: #F2F2F2; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: 'Noto Sans', sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  .slide { width: 960px; height: 540px; position: relative; overflow: hidden; background: #fff;
+           page-break-after: always; break-after: page; }
+  .navy   { --accent: #1F3864; --tint: #DCE3F2; }
+  .purple { --accent: #5B2C8F; --tint: #E9DDF3; }
+  .orange { --accent: #B25A0E; --tint: #FBE5CC; }
+  .green  { --accent: #4A6B2A; --tint: #E2EDD9; }
+
+  .label { position: absolute; top: 22px; left: 40px; font-size: 10px; font-weight: 700; color: var(--accent); }
+  h1 { position: absolute; top: 40px; left: 40px; right: 40px; margin: 0; font-size: 26px; line-height: 1.25; font-weight: 700; }
+  .rule { position: absolute; top: 86px; left: 40px; right: 39px; height: 4px; background: var(--accent); box-shadow: 0 1.5px 2px rgba(0,0,0,.3); }
+  .chip { position: absolute; top: 14px; right: 39px; width: 179px; height: 27px; border-radius: 5px; background: var(--tint);
+          box-shadow: 0 2px 4px rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center;
+          font-size: 9.5px; font-weight: 700; color: var(--accent); }
+  .pg { position: absolute; right: 22px; bottom: 14px; font-size: 9px; color: var(--grey); }
+  .abs { position: absolute; }
+  p { margin: 0 0 7px; }
+  .body { font-size: 12px; line-height: 1.38; }
+  .small { font-size: 10px; line-height: 1.38; color: #555; }
+  .caption { font-size: 10px; line-height: 1.38; color: #555; }
+  .lecture { position: absolute; left: 40px; top: 453px; font-size: 9.5px; color: #555; }
+
+  .cards { position: absolute; left: 40px; right: 39px; top: 98px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; }
+  .card { height: 58px; border-radius: 8px; background: var(--tint); box-shadow: 0 2px 4px rgba(0,0,0,.2);
+          display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 6px; }
+  .card b { font-size: 18px; color: var(--accent); line-height: 1.2; }
+  .card span { font-size: 9px; color: var(--ink); margin-top: 1px; }
+
+  table.t { border-collapse: collapse; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,.15); background: #fff; }
+  table.t th { background: var(--accent); color: #fff; font-weight: 700; padding: 3px 6px; text-align: left; border-right: 1px solid #fff; }
+  table.t td { padding: 3px 6px; vertical-align: top; border-right: 1px solid #fff; }
+  table.t tr:nth-child(even) td { background: var(--zebra); }
+  table.t .r { text-align: right; } table.t th.r { text-align: right; }
+  table.t tr.bold td { font-weight: 700; }
+
+  .callout { position: absolute; left: 40px; right: 39px; top: 474px; height: 42px; border-radius: 8px; background: var(--tint);
+             box-shadow: 0 2px 4px rgba(0,0,0,.2); display: flex; align-items: center; padding: 0 15px; font-size: 12px; line-height: 1.32; }
+  .chart { position: absolute; left: 558px; top: 170px; width: 362px; }
+  .chart img { width: 100%; display: block; }
+
+  ul.b { margin: 0; padding-left: 0; list-style: none; font-size: 12px; line-height: 1.38; }
+  ul.b li { margin-bottom: 8px; }
+  ul.b li::before { content: "•  "; }
+
+  .flow { position: absolute; left: 40px; right: 39px; display: grid; grid-template-columns: 1fr 26px 1fr 26px 1fr; align-items: center; }
+  .flow .box { height: 56px; border-radius: 8px; background: #DCE3F2; box-shadow: 0 2px 4px rgba(0,0,0,.2); display: flex; flex-direction: column;
+               align-items: center; justify-content: center; text-align: center; padding: 0 10px; }
+  .flow .box b { font-size: 12px; color: var(--navy); }
+  .flow .box span { font-size: 9.5px; margin-top: 2px; color: #444; }
+  .flow .arr { text-align: center; font-weight: 700; color: var(--navy); }
+
+  .sub { font-size: 13px; font-weight: 700; color: var(--navy); }
+  /* soft shadows print as grey boxes in some PDF viewers: use thin borders instead */
+  * { box-shadow: none !important; }
+  .card, .chip, .callout, .hook, .ans, .flow .box, table.t, .bar { border: 1px solid rgba(0,0,0,.12); }
+</style>
+</head>
+<body>
+
+<!-- 1 · cover -->
+<section class="slide navy" style="background:#FBF6EE">
+  <div class="abs" style="left:40px;top:24px;font-size:13px;font-weight:700;color:#1F3864">QF5210</div>
+  <div class="abs" style="right:40px;top:24px;font-size:13px;font-weight:700;color:#1F3864;letter-spacing:.04em">GROUP PROJECT</div>
+  <div class="abs" style="left:41px;top:92px;font-size:17px;font-weight:700;color:#1F3864;letter-spacing:.42em">THE</div>
+  <div class="abs" style="left:36px;top:112px;font-family:'Baloo 2';font-weight:800;font-size:86px;line-height:1;color:#1F3864">Quadrant</div>
+  <div class="abs" style="left:36px;top:220px;font-family:'Baloo 2';font-weight:800;font-size:86px;line-height:1;color:#C8902A">Strategy<span style="color:#C0392B">.</span></div>
+  <div class="abs" style="left:41px;top:340px;font-size:18px;font-weight:700;color:#1F3864">Four Market Structures</div>
+  <div class="abs" style="left:41px;top:367px;font-size:12px;color:#444">One book, four engines, each earning a different kind of return.</div>
+  <div class="abs" style="left:41px;top:392px;font-size:12px;color:#444"><b style="color:#1F3864">1.39</b> Sharpe &nbsp;&nbsp;·&nbsp;&nbsp; <b style="color:#1F3864">21.4%</b> CAGR &nbsp;&nbsp;·&nbsp;&nbsp; <b style="color:#1F3864">−14.9%</b> Max DD &nbsp;&nbsp;·&nbsp;&nbsp; <b style="color:#1F3864">+1.42%</b> in Oct 2026 (+18.7% annualised)</div>
+  <div class="abs" style="left:47px;top:428px;width:526px;height:73px;border-radius:9px;background:#E8E1D5"></div>
+  <div class="abs" style="left:41px;top:422px;width:526px;height:73px;border-radius:9px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.15)"></div>
+  <img class="abs" src="img/book_curve.png" style="left:50px;top:440px;width:184px">
+  <div class="abs" style="left:248px;top:436px;width:310px;font-size:10px;line-height:1.45;color:#444"><b style="color:#1F3864">The book</b><br>Equity curve, Apr 2021 to Oct 2026, net of costs. &nbsp;<b style="color:#1F3864">+196.4% total</b></div>
+  <img class="abs" src="img/cover_art.png" style="left:598px;top:79px;width:326px;height:406px">
+  <div class="abs" style="left:41px;top:510px;font-size:10px;color:#444">Andrew Wiraatmaja · Edward Sujono · Michael Japardi · Victoria Chan · Wielly Halim</div>
+  <div class="abs" style="right:40px;top:510px;font-size:10px;color:#444">QF5210 · Financial Time Series · Oct 2026</div>
+</section>
+
+<!-- 2 · hook -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 1 · ANDREW</div>
+  <div class="label">THE HOOK · WHY THIS BOOK, WHY NOW</div>
+  <h1>Tariffs, a yen unwind, a crypto winter</h1>
+  <div class="rule"></div>
+  <div class="abs" style="top:97px;left:40px;right:39px;font-size:12px;color:#555">Five very different markets in five years. Each paid one kind of strategy and punished another. Here is which sleeve did what.</div>
+  <style>
+    .hook { position:absolute; left:40px; right:39px; height:60px; border-radius:8px; background:var(--tint); box-shadow:0 2px 4px rgba(0,0,0,.2);
+            display:grid; grid-template-columns:245px 363px 1fr; align-items:start; padding:9px 14px 0; font-size:10.5px; line-height:1.35; }
+    .hook b { font-size:12.5px; color:var(--accent); padding-top:2px; }
+  </style>
+  <div class="hook navy"   style="top:130px"><b>2021–22 · Crypto winter</b><div>Bitcoin fell 74% from its peak. Anyone who just held it took the whole loss.</div><div>The wheel: max drawdown −28%, against −74% for the coin; 2022 −16.6% vs −64.2%.</div></div>
+  <div class="hook green"  style="top:197px"><b>2022 · The rate shock</b><div>Stocks and bonds fell together, so the usual hedge did not work.</div><div>Short IDR +8.6% as the dollar rallied. E1 −2.2%, dip sat in cash (−1.2%). Book: −7.3% vs S&amp;P 500 −19.4%.</div></div>
+  <div class="hook navy"   style="top:264px"><b>Aug 2024 · The yen unwind</b><div>Three days of forced selling worldwide when the yen carry trade unwound.</div><div>The dip sleeve bought it (+5.7%); wheel −3.4%, short IDR flat (dollar filter off). Book: −0.6%.</div></div>
+  <div class="hook purple" style="top:330px"><b>Apr 2025 · The Trump tariff shock</b><div>Tariffs announced, paused and announced again within weeks.</div><div>The dip sleeve bought the tariff dip (+13.7% over 1–11 Apr); wheel +4.6%. Book: +3.6%.</div></div>
+  <div class="hook orange" style="top:397px"><b>Oct 2026 · The live window</b><div>1 to 30 Oct: S&amp;P 500 −0.9%, Bitcoin −6.9%, chip sell-off mid-month.</div><div>Wheel +5.3%, short IDR +1.6%, E1 −0.5%, dip −9.3%. Book: +1.42% (+18.7% annualised).</div></div>
+  <div class="abs" style="left:40px;right:39px;top:466px;text-align:center;font-size:12.5px;font-weight:700">No one strategy did well in all five. The book is built so that one piece of news cannot hurt every sleeve at the same time.</div>
+  <div class="pg">2</div>
+</section>
+
+<!-- 3 · why a book -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 1 · ANDREW</div>
+  <div class="label">THE BOOK · WHY FOUR ENGINES</div>
+  <h1>Why a book, not a strategy</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:102px;left:40px;width:881px;font-size:13px">
+    <tr><th style="width:187px">Sleeve</th><th style="width:158px">Premium</th><th style="width:223px">Market</th><th>What kills it</th></tr>
+    <tr><td style="color:#1F3864">1. Mean reversion</td><td>Relative value</td><td>SGX + US equities</td><td>Crowding; regime change</td></tr>
+    <tr><td style="color:#5B2C8F">2. Crypto wheel</td><td>Volatility</td><td>BTC and HYPE options</td><td>A bear that whipsaws the 200-day rule</td></tr>
+    <tr><td style="color:#B25A0E">3. Short IDR</td><td>Emerging-market currency risk</td><td>USD/IDR forwards</td><td>A rupiah rally while the dollar is rising</td></tr>
+    <tr><td style="color:#4A6B2A">4. Dip buying</td><td>Short-term reversal</td><td>Nasdaq-100 equities</td><td>A bear that keeps dipping; no stop loss</td></tr>
+  </table>
+<div class="abs" style="top:258px;left:40px;width:420px;font-size:12.5px;line-height:1.34"><b>Why they combine</b><ul class="b" style="font-size:12.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:3px">Correlation between any pair of sleeves: <b>−0.09 to +0.15</b> (Apr 2021 to Oct 2026)</li><li style="margin-bottom:3px">Different, but not fully independent: the wheel moves with crypto, short IDR with the dollar</li><li style="margin-bottom:3px">Sized with those links in mind, the book does better than any sleeve alone</li></ul></div><div class="abs" style="top:258px;left:493px;width:428px;font-size:12.5px;line-height:1.34"><b>The weakness they share</b><ul class="b" style="font-size:12.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:3px">Sleeves 2 and 4 both lose when markets fall</li><li style="margin-bottom:3px">What holds up in a crash: E1 barely moves with markets (R² 0.03); short IDR made +8.6% in 2022; the dip sleeve sat in cash (−1.2% in 2022)</li><li style="margin-bottom:3px">The last defence is the book brake (slide 11)</li></ul></div>
+  <div class="cards" style="top:404px">
+    <div class="card"><b>1.39</b><span>Book Sharpe (common window)</span></div>
+    <div class="card"><b>≤ 0.15</b><span>Highest pairwise sleeve correlation</span></div>
+    <div class="card"><b>+1.42%</b><span>October 2026 (+18.7% annualised)</span></div>
+    <div class="card"><b>−14.9%</b><span>Book max drawdown</span></div>
+  </div>
+  <div class="pg">3</div>
+</section>
+
+<!-- 4 · E1 -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 2 · EDWARD</div>
+  <div class="label">SLEEVE 1 · RELATIVE VALUE</div>
+  <h1>Mean reversion engine (PCA statistical arbitrage)</h1>
+  <div class="rule"></div>
+  <div class="cards">
+    <div class="card"><b>0.67</b><span>Sharpe, net (2019–2026)</span></div>
+    <div class="card"><b>−9.1%</b><span>Max drawdown</span></div>
+    <div class="card"><b>1,551</b><span>Trades · 59.3% win rate</span></div>
+    <div class="card"><b>0.08</b><span>Sharpe since 2024: the edge is fading</span></div>
+  </div>
+  <div class="abs" style="top:166px;left:40px;width:497px;font-size:11px;line-height:1.34"><b>Frozen spec</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">34 large caps (9 SGX + 25 US); strip out market and sector moves (3 PCA factors, 60 days)</li><li style="margin-bottom:1px">What is left is the stock's own move, which drifts above and below zero: the residual</li><li style="margin-bottom:1px">The s-score says how far from zero it is now, in standard deviations (an OU fit)</li><li style="margin-bottom:1px">Trade when stretched by 1.5, close when back within 0.5, stop if it passes 3.5</li><li style="margin-bottom:1px">Only stocks that normally snap back within 30 days (half-life); 10 bps per weight change</li></ul></div>
+  <table class="t abs" style="top:264px;left:40px;width:497px">
+    <tr><th colspan="2">Net results, Apr 2019 to Oct 2026</th></tr>
+    <tr><td>Return</td><td class="r">5.7%/yr</td></tr>
+    <tr><td>Sharpe</td><td class="r">0.67</td></tr>
+    <tr><td>Volatility</td><td class="r">8.5%</td></tr>
+    <tr><td>Max drawdown</td><td class="r">−9.1%</td></tr>
+    <tr><td>Trades / win rate</td><td class="r">1,551 / 59.3%</td></tr>
+    <tr><td>Avg hold / profit per trade</td><td class="r">11.9 days / +2.7 bps</td></tr>
+  </table>
+  <div class="chart"><img src="img/e1_equity.png"><div class="caption" style="margin-top:5px">• Equity curve and drawdown, net of costs<br>• Made money through the 2020 crash; 2022 only −2.2%<br>• The flat years are the recent ones</div></div>
+  <div class="lecture">Lecture exhibits: factor attribution (A6) · cointegration and residual diagnostics (A8)</div>
+  <div class="callout"><span><b>Its weakness, stated plainly:</b>&nbsp;the edge is real but fading, so this sleeve is the book's steady 20%, not where the return comes from.</span></div>
+  <div class="pg">4</div>
+</section>
+
+<!-- 5 · wheel -->
+<section class="slide purple">
+  <div class="chip">SPEAKER 2 · EDWARD</div>
+  <div class="label">SLEEVE 2 · VOLATILITY PREMIUM</div>
+  <h1>Crypto options wheel (BTC, then HYPE)</h1>
+  <div class="rule"></div>
+  <div class="cards">
+    <div class="card"><b>1.17 vs 0.74</b><span>Sharpe vs buy-and-hold</span></div>
+    <div class="card"><b>−28% vs −74%</b><span>Max DD vs buy-and-hold</span></div>
+    <div class="card"><b>−17% vs −64%</b><span>2022: wheel vs BTC</span></div>
+    <div class="card"><b>≈17%</b><span>1-week 99% expected shortfall (A7)</span></div>
+  </div>
+  <div class="abs" style="top:166px;left:40px;width:497px;font-size:11px;line-height:1.32"><b>Mechanism</b>
+    <ul class="b" style="font-size:11px;line-height:1.32;margin-top:2px"><li style="margin-bottom:1px">Every Friday, sell a 25-delta option with 1 week to expiry</li><li style="margin-bottom:1px">Holding no coin: sell a put, fully backed by cash. Holding the coin: sell a call against it</li><li style="margin-bottom:1px">Apr 2021 to Jan 2025: Bitcoin, priced off Deribit's DVOL index</li><li style="margin-bottom:1px">From Jan 2025: 70% HYPE (A9) + 30% Bitcoin, rebalanced quarterly; cash at T-bill</li><li style="margin-bottom:1px">Coin below its own 200-day average at a Friday close: BTC leg halves, HYPE leg exits, into T-bills</li></ul></div>
+  <table class="t abs" style="top:263px;left:40px;width:497px;font-size:11px">
+    <tr><th></th><th class="r">Sharpe</th><th class="r">CAGR</th><th class="r">Max DD</th></tr>
+    <tr><td>Always-on wheel, no trend rule</td><td class="r">1.14</td><td class="r">40.1%</td><td class="r">−43.4%</td></tr>
+    <tr class="bold"><td>Always-on, 200d rule per coin (adopted)</td><td class="r">1.17</td><td class="r">34.3%</td><td class="r">−28.3%</td></tr>
+    <tr><td>Buy and hold, same coins</td><td class="r">0.74</td><td class="r">31.2%</td><td class="r">−74.3%</td></tr>
+  </table>
+  <div class="chart"><img src="img/wheel_equity.png"><div class="caption" style="margin-top:5px">The wheel against buy-and-hold of the same coins, log scale. The rejected first design is in A3.</div></div>
+  <div class="lecture">Lecture exhibits: tail risk, EVT (A7) · the coin screen (A9)</div>
+  <div class="callout"><span><b>Sells every week, cuts back in bears:</b>&nbsp;the wheel sells an option every week it is on. Below its 200-day average, BTC runs at half size and HYPE stops, so a long bear market cannot wipe out the thinner coin. CAGR 34.3% from Apr 2021; 40.1% without the rule.</span></div>
+  <div class="pg">5</div>
+</section>
+
+<!-- 6 · short IDR (IDX's slot) -->
+<section class="slide orange">
+  <div class="chip">SPEAKER 3 · WIELLY</div>
+  <div class="label">SLEEVE 3 · EMERGING-MARKET CURRENCY RISK</div>
+  <h1>Short rupiah (USD/IDR forwards)</h1>
+  <div class="rule"></div>
+  <div class="cards">
+    <div class="card"><b>+1.6%</b><span>October 2026 (+21% annualised)</span></div>
+    <div class="card"><b>0.55</b><span>Sharpe 2015–2026 (0.02 without the dollar filter)</span></div>
+    <div class="card"><b>+8.6% · +5.0%</b><span>2022 and 2026: emerging-market stress years</span></div>
+    <div class="card"><b>52%</b><span>Time in the market; 3.0%/yr carry while on</span></div>
+  </div>
+  <div class="abs" style="top:166px;left:40px;width:497px;font-size:11px;line-height:1.34"><b>Design</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Bet the rupiah weakens: long USD/IDR at 1× through 1-month forwards, rolled monthly</li><li style="margin-bottom:1px">Keep the position only while the dollar index is up over the last 21 trading days; otherwise close it and sit in cash</li><li style="margin-bottom:1px">Checked daily, acted on the next day: in the market 52% of the time, about 22 switches a year</li><li style="margin-bottom:1px">Cost: the 3%/yr rate gap while on, 3 bps per roll, 5 bps per switch</li></ul></div>
+  <table class="t abs" style="top:260px;left:40px;width:497px">
+    <tr><th></th><th class="r">Sharpe</th><th class="r">CAGR</th><th class="r">Max DD</th></tr>
+    <tr class="bold"><td>Short IDR, dollar filter, 2015–2026</td><td class="r">0.55</td><td class="r">2.8%</td><td class="r">−9.4%</td></tr>
+    <tr><td>Short IDR, dollar filter, common window</td><td class="r">0.86</td><td class="r">3.7%</td><td class="r">−5.4%</td></tr>
+    <tr><td>Always-on short, no filter, 2015–2026</td><td class="r">0.02</td><td class="r">−0.1%</td><td class="r">−24.1%</td></tr>
+  </table>
+  <div class="abs" style="top:356px;left:40px;width:497px;font-size:11px;line-height:1.34"><b>Findings</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Always on, <b>it earns nothing</b>: the carry eats the rupiah's slide (Sharpe 0.02 since 2015)</li><li style="margin-bottom:1px"><b>It pays when emerging markets get sold</b>: +10.6% in 2015, +8.6% in 2022, +5.0% in 2026</li><li style="margin-bottom:1px">October chip sell-off week: +1.1%</li><li style="margin-bottom:1px">USD/IDR's own trend fails as a filter: it spikes, then reverses (A3)</li></ul></div>
+  <div class="chart"><img src="img/fx_equity.png"><div class="caption" style="margin-top:5px">• Grey: USD/IDR spot. Orange: the sleeve, 2015 to 2026<br>• Flat stretches: the filter is off. The rest of the gap is carry</div></div>
+  <div class="lecture">Carry is an assumption: Bank Indonesia's rate sat about 1 to 7 points above US bills over the period; 3.0% is a mid estimate. &nbsp;·&nbsp; Exhibits: A6 · A7</div>
+  <div class="callout"><span><b>Insurance with a known cost:</b>&nbsp;the sleeve earns when the rupiah breaks, and pays the carry only while the dollar is already moving our way.</span></div>
+  <div class="pg">6</div>
+</section>
+
+<!-- 7 · dip -->
+<section class="slide green">
+  <div class="chip">SPEAKER 3 · WIELLY</div>
+  <div class="label">SLEEVE 4 · SHORT-TERM REVERSAL</div>
+  <h1>Dip buying, Nasdaq-100</h1>
+  <div class="rule"></div>
+  <div class="cards">
+    <div class="card"><b>1.07</b><span>Sharpe, long run 2015–2026</span></div>
+    <div class="card"><b>1.61</b><span>Sharpe since 2024</span></div>
+    <div class="card"><b>−1.2%</b><span>2022: sat the bear market out</span></div>
+    <div class="card"><b>≈11%</b><span>Average capital use</span></div>
+  </div>
+  <div class="abs" style="top:166px;left:40px;width:497px;font-size:11px;line-height:1.34"><b>Design (our rebuild of a published rule set)</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Nasdaq-100 names above their 200-day average</li><li style="margin-bottom:1px">Signal: 1-day drop &gt; 3% at high ATR → next-day limit buy 0.9×ATR below the close</li><li style="margin-bottom:1px">Exit: +0.5×ATR target, close above prior day's high, or day 11</li><li style="margin-bottom:1px">Max 10 positions; no stop loss</li></ul></div>
+  <table class="t abs" style="top:284px;left:40px;width:497px">
+    <tr><td style="width:223px">Long run 2015–2026</td><td class="r">Sharpe 1.07 daily (1.46 weekly), CAGR 14.9%</td></tr>
+    <tr class="bold"><td>Trades / win rate / hold</td><td class="r">867 / 69.7% / 4.7 days</td></tr>
+    <tr><td>Max drawdown</td><td class="r">−12.2%</td></tr>
+    <tr><td>October 2026, 1–30 Oct</td><td class="r">−9.3%</td></tr>
+    <tr><td>Since 2024 (published test window)</td><td class="r">Sharpe 1.61, CAGR 37.0% (to 30 Oct 2026)</td></tr>
+  </table>
+  <div class="chart"><img src="img/dip_equity.png"><div class="caption" style="margin-top:5px">• Equity and drawdown, 2015 to 2026, after IBKR commissions<br>• Flat stretches: no qualifying dips, no trades<br>• Universe: today's constituents (slide 10)</div></div>
+  <div class="lecture">Lecture exhibits: factor attribution (A6) · tail risk, EVT (A7)</div>
+  <div class="callout"><span><b>It survives bear markets by staying out of them:</b>&nbsp;the 200-day filter keeps it in cash once dips turn into a downtrend. Its weak spot is the opposite case, a crash that starts at all-time highs, as the Oct 2026 chip sell-off showed (−11.2% in a week).</span></div>
+  <div class="pg">7</div>
+</section>
+
+<!-- 8 · portfolio -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 4 · MICHAEL</div>
+  <div class="label">PORTFOLIO · CONSTRUCTION</div>
+  <h1>The book holds up when its parts fall</h1>
+  <div class="rule"></div>
+  <div class="cards">
+    <div class="card"><b>1.39</b><span>Book Sharpe (common window)</span></div>
+    <div class="card"><b>−7.3%</b><span>2022: BTC −64%, equities −19%</span></div>
+    <div class="card"><b>−14.9%</b><span>Book max drawdown</span></div>
+    <div class="card"><b>+0.16</b><span>Book equity beta (A6)</span></div>
+  </div>
+  <div class="abs" style="top:166px;left:40px;width:497px;font-size:11px;line-height:1.34"><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Weights, rebalanced quarterly: <b>E1 20% · Dip 15% · Short IDR 15% · Wheel 50%</b></li><li style="margin-bottom:1px">Common window: Apr 2021 to Oct 2026 (291 weeks), all in USD</li></ul></div>
+  <table class="t abs" style="top:226px;left:40px;width:497px">
+    <tr><th></th><th class="r">Sharpe*</th><th class="r">CAGR</th><th class="r">Vol</th><th class="r">Max DD</th></tr>
+    <tr><td>E1</td><td class="r">0.23</td><td class="r">1.6%</td><td class="r">8.1%</td><td class="r">−8.4%</td></tr>
+    <tr><td>DIP</td><td class="r">1.46</td><td class="r">18.8%</td><td class="r">12.3%</td><td class="r">−12.0%</td></tr>
+    <tr><td>Short IDR</td><td class="r">0.86</td><td class="r">3.7%</td><td class="r">4.3%</td><td class="r">−5.4%</td></tr>
+    <tr><td>Wheel</td><td class="r">1.17</td><td class="r">34.3%</td><td class="r">28.9%</td><td class="r">−28.3%</td></tr>
+    <tr class="bold"><td>BOOK</td><td class="r">1.39</td><td class="r">21.4%</td><td class="r">14.8%</td><td class="r">−14.9%</td></tr>
+    <tr><td>SPX</td><td class="r">0.80</td><td class="r">12.0%</td><td class="r">15.7%</td><td class="r">−24.8%</td></tr>
+  </table>
+  <div class="abs" style="top:400px;left:40px;width:497px;font-size:10.5px;line-height:1.3"><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">Stress: 2022 −7.3% (S&amp;P −19.4%) · Aug 2024 −0.6% · Apr 2025 +3.6%</li><li style="margin-bottom:0px">Oct 2026: +1.42% (+18.7% annualised)</li><li style="margin-bottom:0px">By year: 2023 +24.8% · 2024 +31.3% · 2025 +38.0% · 2026 +37.7%</li></ul></div>
+  <div class="chart"><img src="img/book_sleeves.png"><div class="caption" style="margin-top:4px;font-size:9.5px">• Correlations: E1–DIP −0.09, E1–IDR −0.05, E1–Wheel −0.03, DIP–IDR −0.08, DIP–Wheel +0.15, IDR–Wheel −0.09<br>• Grey dashed: S&amp;P 500, +88.6% with a −24.8% drawdown; book +196.4%, −14.9%<br>• Exhibits: A5 · A7 · A6</div></div>
+  <div class="abs small" style="left:40px;top:453px;font-size:9.5px">*Sharpe = annualised mean weekly return ÷ standard deviation, no risk-free rate deducted (all rows); net of T-bills (avg 3.4%): book 1.16, SPX 0.58.</div>
+  <div class="callout"><span><b>Mixing the four is what makes the book work:</b>&nbsp;Sharpe 1.39, max drawdown −14.9% against the S&amp;P 500's −24.8%, −7.3% in 2022 against −19.4%, and +1.42% in an October when the dip sleeve lost 9.3%.</span></div>
+  <div class="pg">8</div>
+</section>
+
+<!-- 9 · operating plan -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 4 · MICHAEL</div>
+  <div class="label">LIVE WINDOW · OPERATIONS</div>
+  <h1>Operating plan</h1>
+  <div class="rule"></div>
+  <div class="abs" style="top:100px;left:40px;width:425px">
+    <div style="font-size:15px;font-weight:700;margin-bottom:14px">How the book is run</div>
+    <ul class="b" style="font-size:12px">
+      <li>Rules were fixed on 1 Oct; the three changes since are listed on the right</li>
+      <li>Every Friday close: a one-page report per sleeve and for the book</li>
+      <li>Brake: if the book is 5% below its peak, cut every position in half; at 8%, stop and review</li>
+      <li>Lowest point in October: −0.1%, on 1 Oct</li>
+    </ul>
+  </div>
+<div class="abs" style="top:98px;left:493px;width:428px;font-size:10.5px;line-height:1.34"><b>Reporting</b><ul class="b" style="font-size:10.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">The brief's nine metrics, per sleeve and for the book, with trade counts beside each</li><li style="margin-bottom:0px">Weeks of live data show whether we follow the rules, not whether the edge is real</li></ul></div><div class="abs" style="top:170px;left:493px;width:428px;font-size:10.5px;line-height:1.34"><b>Freeze log (three changes)</b><ul class="b" style="font-size:10.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">15 Oct: a trend-following futures sleeve was replaced by dip buying (A3)</li><li style="margin-bottom:0px">22 Oct: E1 rerun with full trading costs</li><li style="margin-bottom:0px">31 Oct: an Indonesian commodity-stock sleeve was replaced by short IDR; HYPE added to the wheel from 2025, with the 200-day rule; weights set to 20/15/15/50</li></ul></div><div class="abs" style="top:262px;left:493px;width:428px;font-size:10.5px;line-height:1.34"><b>Brake in the backtest</b><ul class="b" style="font-size:10.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">The book was 5% or more below its peak in 108 of 291 weeks (12 separate episodes); it hit −8% in 2021, 2022 and Mar 2025</li></ul></div>
+  <div class="abs sub" style="top:330px;left:40px">The operating rhythm</div>
+  <style>
+    .rh { position:absolute; top:352px; width:212px; height:96px; border-radius:7px; background:#fff; border:1px solid #ddd; box-shadow:0 2px 4px rgba(0,0,0,.15); padding:9px 10px; font-size:9.5px; line-height:1.35; }
+    .rh b { display:block; font-size:10.5px; color:#1F3864; margin-bottom:8px; }
+  </style>
+  <div class="rh" style="left:40px"><b>DAILY</b>Check E1 signals and dip triggers. Trade only what the rules say; log every fill.</div>
+  <div class="rh" style="left:262px"><b>WEEKLY</b>Friday: the wheel sells next week's HYPE and BTC options. Short IDR forwards roll once a month.</div>
+  <div class="rh" style="left:484px"><b>QUARTERLY</b>Reset the book to 20 / 15 / 15 / 50 and the wheel to 70 / 30 HYPE / BTC. No weight changes in between.</div>
+  <div class="rh" style="left:706px;width:215px"><b>FRIDAY CLOSE</b>One-page report per sleeve and for the book: the brief's metrics, with trade counts.</div>
+  <div class="abs sub" style="top:452px;left:40px;font-size:12px">The brake, as a gauge</div>
+  <div class="abs" style="top:456px;left:560px;font-size:9px;color:#555">−14.9% backtest low with no brake, past the stop ▶</div>
+  <div class="abs" style="top:470px;left:40px;width:881px;height:17px;display:grid;grid-template-columns:440px 266px 1fr;font-size:9.5px;font-weight:700">
+    <div style="background:#D5E8D4;display:flex;align-items:center;justify-content:center">0% to −5% · full size</div>
+    <div style="background:#FBE5CC;display:flex;align-items:center;justify-content:center">−5% · half size</div>
+    <div style="background:#F4D7DA;display:flex;align-items:center;justify-content:center">−8% · stop and review</div>
+  </div>
+  <div class="callout" style="top:492px;height:36px;font-size:11.5px"><span><b>What October tested was whether we follow our own rules:</b>&nbsp;fixed rules, a report every Friday, and a brake the book never came near (lowest point −0.1%).</span></div>
+  <div class="pg">9</div>
+</section>
+
+<!-- 10 · limitations -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 5 · VICTORIA</div>
+  <div class="label">HONESTY · LIMITATIONS</div>
+  <h1>Limitations, stated plainly</h1>
+  <div class="rule"></div>
+<div class="abs" style="top:98px;left:40px;width:430px;font-size:11.5px;line-height:1.36"><b>E1</b><ul class="b" style="font-size:11.5px;line-height:1.36;margin-top:3px"><li style="margin-bottom:1px">Uses today's 34 names for the whole history</li><li style="margin-bottom:1px">Its edge is fading, and we show that rather than hide it</li></ul></div><div class="abs" style="top:170px;left:40px;width:430px;font-size:11.5px;line-height:1.36"><b>Dip</b><ul class="b" style="font-size:11.5px;line-height:1.36;margin-top:3px"><li style="margin-bottom:1px">Uses today's Nasdaq-100 for the whole history: its Sharpe is an upper bound</li><li style="margin-bottom:1px">Position sizing rebuilt from the published rules</li></ul></div><div class="abs" style="top:98px;left:493px;width:428px;font-size:11.5px;line-height:1.36"><b>Short IDR</b><ul class="b" style="font-size:11.5px;line-height:1.36;margin-top:3px"><li style="margin-bottom:1px">Carry is a flat 3%/yr assumption, not real forward points</li><li style="margin-bottom:1px">The dollar filter is one rule tested on the same history it is judged on</li></ul></div><div class="abs" style="top:170px;left:493px;width:428px;font-size:11.5px;line-height:1.36"><b>Book</b><ul class="b" style="font-size:11.5px;line-height:1.36;margin-top:3px"><li style="margin-bottom:1px">Only 5.5 years of history; no 2008- or 2020-style crash</li><li style="margin-bottom:1px">HYPE has 22 months of data, mostly in a rising market</li><li style="margin-bottom:1px">The wheel is half the book, so its tail is the book's tail</li></ul></div>
+  <div class="abs sub" style="top:338px;left:40px">Where each sleeve is most exposed</div>
+  <style>
+    .mx { position:absolute; left:40px; top:362px; display:grid; grid-template-columns:150px repeat(4, 174px); row-gap:8px; font-size:10px; align-items:center; }
+    .mx .h { text-align:center; color:#555; }
+    .mx .n { font-weight:700; }
+    .mx .d { justify-self:center; width:17px; height:17px; border-radius:50%; box-shadow:0 1.5px 3px rgba(0,0,0,.3); }
+    .H { background:#C0392B; } .M { background:#E69C2E; } .L { background:#A9BC9B; }
+  </style>
+  <div class="mx">
+    <div></div><div class="h">Synthetic / estimated inputs</div><div class="h">Costs &amp; frictions</div><div class="h">Edge decay</div><div class="h">Tail / regime break</div>
+    <div class="n" style="color:#1F3864">E1 · Mean reversion</div><div class="d M"></div><div class="d M"></div><div class="d H"></div><div class="d L"></div>
+    <div class="n" style="color:#5B2C8F">Wheel · BTC / HYPE</div><div class="d H"></div><div class="d M"></div><div class="d L"></div><div class="d H"></div>
+    <div class="n" style="color:#B25A0E">Short IDR · FX</div><div class="d M"></div><div class="d L"></div><div class="d H"></div><div class="d M"></div>
+    <div class="n" style="color:#4A6B2A">Dip · NDX reversal</div><div class="d H"></div><div class="d L"></div><div class="d M"></div><div class="d H"></div>
+  </div>
+  <div class="abs" style="top:500px;left:40px;font-size:9.5px;display:flex;gap:22px;align-items:center">Severity:
+    <span style="display:flex;align-items:center;gap:5px"><i class="H" style="width:12px;height:12px;border-radius:50%;display:inline-block"></i>High</span>
+    <span style="display:flex;align-items:center;gap:5px"><i class="M" style="width:12px;height:12px;border-radius:50%;display:inline-block"></i>Med</span>
+    <span style="display:flex;align-items:center;gap:5px"><i class="L" style="width:12px;height:12px;border-radius:50%;display:inline-block"></i>Low</span>
+  </div>
+  <div class="pg">10</div>
+</section>
+
+<!-- 11 · kill criteria -->
+<section class="slide navy">
+  <div class="chip">SPEAKER 5 · VICTORIA</div>
+  <div class="label">RISK · PRE-COMMITMENT</div>
+  <h1>Kill criteria, pre-committed</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:102px;left:40px;width:881px;font-size:12.5px">
+    <tr><th style="width:115px">Sleeve</th><th>Kill rule</th></tr>
+    <tr><td>E1</td><td>Stop if live profit per trade is negative after 200 trades, or if the freeze log shows a parameter change.</td></tr>
+    <tr><td>Wheel</td><td>Stop if cumulative assignment losses exceed the trailing two years of premium collected.</td></tr>
+    <tr><td>Short IDR</td><td>Stop if the sleeve's live drawdown exceeds −10%, beyond its full-history backtest maximum (−9.4% since 2015; −5.4% on the common window).</td></tr>
+    <tr><td>Dip</td><td>Stop if sleeve drawdown exceeds −13%, beyond its backtest maximum of −12.2% (long run; −11.6% since 2024): the design has no stop loss, so the drawdown limit is the stop.</td></tr>
+    <tr><td>Book</td><td>The −8% brake is the kill criterion for the combination itself.</td></tr>
+  </table>
+  <div class="abs sub" style="top:312px;left:40px">The book brake, on one line</div>
+  <div class="abs" style="top:338px;left:40px;width:881px;height:30px;display:grid;grid-template-columns:367px 220px 1fr;box-shadow:0 2px 4px rgba(0,0,0,.2);font-size:11px;font-weight:700">
+    <div style="background:#D5E8D4;display:flex;align-items:center;justify-content:center">0% to −5%: full size</div>
+    <div style="background:#FBE5CC;display:flex;align-items:center;justify-content:center">−5%: half size</div>
+    <div style="background:#F4D7DA;display:flex;align-items:center;justify-content:center">−8%: stop and review</div>
+  </div>
+  <div class="abs" style="top:374px;left:40px;right:39px;font-size:11px;color:#555">• Backtest max drawdown without the brake: −14.9%, on 14 Mar 2025 (the HYPE crash)<br>• The −8% stop sits inside it, so a repeat is cut at the stop</div>
+  <div class="abs" style="top:425px;left:40px;right:39px;text-align:center;font-size:17px;line-height:1.45">Four sources of return in one book, each sized by how much it can lose,<br>with the rules fixed in advance and reported the way we would want to read them.</div>
+  <div class="pg">11</div>
+</section>
+
+<!-- 12 · conclusion -->
+<section class="slide navy">
+  <div class="label">CONCLUSION</div>
+  <h1>What we built, and what would change our minds</h1>
+  <div class="rule"></div>
+  <style>.pt b { display:block; font-size:13px; color:#1F3864; margin-bottom:1px; } .pt { font-size:10.5px; line-height:1.35; color:#555; margin-bottom:7px; }</style>
+  <div class="abs" style="top:98px;left:40px;width:497px">
+    <div class="pt"><b>1 · Four sources of return, none of them dominant</b>• Correlations −0.09 to +0.15; book equity beta +0.16<br>• Two sleeves lose when markets fall; measured over 291 weeks</div>
+    <div class="pt"><b>2 · The book holds when its parts fall</b>• Sharpe 1.39 vs 0.23 to 1.46 for the sleeves<br>• 2022: −7.3% vs −19.4% for the S&amp;P 500; Oct 2026: +1.42% while dip lost 9.3%<br>• −14.9% drawdown in the Mar 2025 HYPE crash: the wheel is return and risk</div>
+    <div class="pt"><b>3 · Seven designs dropped, all listed in A3</b>• A regime-timed wheel, a commodity-stock sleeve with its two filters, and a trend-futures sleeve failed or were replaced<br>• Trend filters on the rupiah and a one-coin wheel rule were rejected</div>
+    <div class="pt"><b>4 · Sized by what can go wrong, fixed in advance</b>• The wheel has the worst tail (A7), so the brake is set before it is needed</div>
+    <div style="font-size:11px;line-height:1.35"><b>What would change our minds:</b> a sleeve breaking its kill rule live. We stop it and report it.</div>
+  </div>
+  <img class="abs" src="img/book_curve.png" style="left:558px;top:108px;width:362px">
+  <div class="abs" style="left:558px;top:176px;font-size:10px;color:#555">The book: Apr 2021 to Oct 2026, 100 → 296.</div>
+  <div class="abs" style="left:558px;top:206px;font-size:10px;font-weight:700;color:#1F3864">THE HOOK, ANSWERED</div>
+  <style>.ans { position:absolute; left:558px; width:362px; height:32px; border-radius:7px; background:var(--tint); box-shadow:0 2px 4px rgba(0,0,0,.2);
+                display:flex; justify-content:space-between; align-items:center; padding:0 14px; font-size:11px; }
+         .ans b { color:var(--accent); }</style>
+  <div class="ans navy"   style="top:230px"><b>Crypto winter</b><span>Wheel −28% vs −74%</span></div>
+  <div class="ans green"  style="top:271px"><b>Rate shock 2022</b><span>Book −7.3% vs SPX −19.4%</span></div>
+  <div class="ans navy"   style="top:311px"><b>Yen unwind</b><span>Book −0.6%</span></div>
+  <div class="ans purple" style="top:351px"><b>Tariff shock</b><span>Book +3.6%</span></div>
+  <div class="ans orange" style="top:392px"><b>October 2026</b><span>Book +1.42% (+18.7%/yr)</span></div>
+  <div class="callout"><span><b>We are not claiming to have found four sure edges.</b>&nbsp;We are claiming to have built a book that survives being wrong about one of them.</span></div>
+  <div class="pg">12</div>
+</section>
+
+<!-- 13 · A1 specs -->
+<section class="slide navy">
+  <div class="label">APPENDIX A1 · SPECIFICATIONS</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> The exact rules of every sleeve, fixed in advance, so nothing can be changed quietly</div>
+  <h1>Frozen specification sheet</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:102px;left:40px;width:881px;font-size:10.2px">
+    <tr><th style="width:100px">Sleeve</th><th>Specification</th></tr>
+    <tr><td>E1</td><td>3 PCA factors on a 60-day window. Open a trade when the s-score passes ±1.5, close when it comes back inside ∓0.5, stop if |s| passes 3.5. Only names whose residual half-life is 30 days or less. 34 names (9 SGX, 25 US). 10 bps charged on every change in position weight (entries, exits, daily rebalancing).</td></tr>
+    <tr><td>Wheel</td><td>Every Friday, sell a 1-week option at 25 delta: a put when holding no coin, a call when holding it. Cash fully covers the put and earns the T-bill rate; premium is cut by 5%. BTC only to 3 Jan 2025, priced at Deribit's DVOL; from then 70% HYPE / 30% BTC, rebalanced each quarter, HYPE priced at its 30-day realised vol. If a coin closes a Friday below its own 200-day average, its leg runs the next week at half size (BTC) or sits in T-bills (HYPE), and goes back to full size once the coin closes above.</td></tr>
+    <tr><td>Coin screen</td><td>How we pick the wheel's second coin: the protocol spends its own revenue buying the token back; no large VC or insider supply waiting to unlock; real fee-paying usage; enough spot liquidity to trade every week. HYPE passes (fees fund buybacks). BTC has no protocol revenue, so it stays as the liquid core (A9).</td></tr>
+    <tr><td>Short IDR</td><td>Long USD/IDR at 1× through rolling 1-month forwards, held only while the dollar index's 21-day return is positive (checked at each close, applied the next day). Returns in USD. Carry of 3.0% a year (the assumed IDR–USD rate gap) while on, plus 3 bps per roll and 5 bps per switch. No stop apart from the kill rule.</td></tr>
+    <tr><td>Dip</td><td>Nasdaq-100 (101 current names), only those above their 200-day average. Signal: a 1-day drop of more than 3% with ATR(5)/close above 3%. Next day, a limit buy at the signal close minus 0.9×ATR(5); candidates ranked by ATR(5)/close. At most 10 positions, each a tenth of the prior-close equity (reconstructed). Exit at +0.5×ATR, on a close above the prior day's high, or on day 11. No stop loss. IBKR tiered commissions.</td></tr>
+    <tr><td>Book</td><td>20/15/15/50 (E1/dip/short IDR/wheel), rebalanced each quarter. Brake: halve every position at a −5% book drawdown, stop at −8%.</td></tr>
+  </table>
+  <div class="flow" style="top:390px">
+    <div class="box"><b>FROZEN</b><span>Final specification, fixed Oct 2026; three changes logged (slide 9)</span></div><div class="arr">→</div>
+    <div class="box"><b>LIVE WINDOW</b><span>Oct 2026; final tear sheet at the 30 Oct close</span></div><div class="arr">→</div>
+    <div class="box"><b>NO SILENT CHANGES</b><span>Every change goes in the freeze log, with the reason</span></div>
+  </div>
+  <div class="pg">13</div>
+</section>
+
+<!-- 14 · A2 robustness -->
+<section class="slide navy">
+  <div class="label">APPENDIX A2 · ROBUSTNESS</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Show the Sharpe ratios are not driven by a few lucky weeks or by one parameter</div>
+  <h1>Robustness (common window, weekly)</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:108px;left:40px;width:428px">
+    <tr><th></th><th class="r">Sharpe</th><th class="r">Newey–West</th><th class="r">Drop best week</th></tr>
+    <tr><td>E1</td><td class="r">0.23</td><td class="r">0.28</td><td class="r">0.16</td></tr>
+    <tr><td>DIP</td><td class="r">1.46</td><td class="r">1.58</td><td class="r">1.42</td></tr>
+    <tr><td>Short IDR</td><td class="r">0.86</td><td class="r">1.07</td><td class="r">0.77</td></tr>
+    <tr><td>Wheel</td><td class="r">1.17</td><td class="r">1.25</td><td class="r">1.11</td></tr>
+    <tr class="bold"><td>BOOK</td><td class="r">1.39</td><td class="r">1.48</td><td class="r">1.33</td></tr>
+    <tr><td>SPX</td><td class="r">0.80</td><td class="r">0.85</td><td class="r">0.74</td></tr>
+  </table>
+  <img class="abs" src="img/robustness.png" style="left:500px;top:108px;width:420px">
+<div class="abs" style="top:326px;left:40px;width:881px;font-size:12px;line-height:1.34"><ul class="b" style="font-size:12px;line-height:1.34;margin-top:3px"><li style="margin-bottom:3px">Dropping each sleeve's best week changes little: short IDR moves most (0.86 to 0.77), the book goes from 1.39 to 1.33</li><li style="margin-bottom:3px">The Newey–West Sharpe, which corrects for one week's return depending on the last, is higher in every row: weekly returns tend to reverse slightly</li><li style="margin-bottom:3px">E1 does best with the 3 factors we use: Sharpe 0.43 / 0.67 / 0.48 / 0.26 with 2 / 3 / 4 / 5 factors</li><li style="margin-bottom:3px">Opening E1 trades at 1.75 instead of 1.5 lifts the Sharpe to 0.99 but deepens the drawdown to −14.8% from −9.1%; tested but not used</li></ul></div>
+  <div class="pg">14</div>
+</section>
+
+<!-- 15 · A3 rejection log -->
+<section class="slide navy">
+  <div class="label">APPENDIX A3 · REJECTION LOG</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Record what we tried and rejected, with the numbers that decided it</div>
+  <h1>What we tested and dropped</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:102px;left:40px;width:881px;font-size:11.5px">
+    <tr><th style="width:195px">Candidate</th><th>Evidence</th></tr>
+    <tr><td>Trend-following futures sleeve (built, then replaced)</td><td>Worked as designed (Sharpe 0.34; 2022 +17.4%), then replaced as Sleeve 4 by dip buying, which has the stronger record (1.07 long run). The cost: the book no longer shorts bonds or the dollar.</td></tr>
+    <tr><td>Regime-timed wheel (first design)</td><td>Sold puts only below the 200-day average and calls only above it: Sharpe 0.63 vs 1.14 always-on; 2022 −60.7% vs −32.0%. Once it was assigned the coin it sold nothing and held through the bear market. Replaced by the always-on wheel.</td></tr>
+    <tr><td>Indonesian commodity-equity sleeve</td><td>Coal and nickel names, Sharpe 1.11 (IDR, 2016–2026); a palm-oil basket and a positioning-based brake tested inside it had already failed. Replaced by short IDR in the same slot at the 31 Oct review.</td></tr>
+    <tr><td>Trend filters on USD/IDR itself</td><td>Holding the short only when USD/IDR is above its own 20- to 200-day average, or rising on its own momentum: Sharpe −0.4 to −0.9 (2015–2026) against 0.02 for always on. USD/IDR spikes and then falls back, so following its own trend means buying at the top. Replaced by the dollar filter (Sharpe 0.55).</td></tr>
+    <tr><td>One-coin wheel trend rule</td><td>Testing the 70/30 blend against a single 200-day average and halving the whole wheel: book Sharpe 1.42 and CAGR 15.8% (at 35/15/15/35), against 1.47 and 16.5% when each coin is tested against its own average. Taking both coins out fully scored 1.43 and 14.8%. So BTC keeps half a position to catch its rebounds, and HYPE, the thinner coin, exits.</td></tr>
+    <tr><td>Pairs trading</td><td>Set aside before testing as too well known; the PCA engine covers the same idea more generally.</td></tr>
+  </table>
+  <div class="cards" style="top:390px">
+    <div class="card"><b>6</b><span>Entries in this log</span></div>
+    <div class="card"><b>5</b><span>Dropped or replaced</span></div>
+    <div class="card"><b>1</b><span>Set aside untested (pairs)</span></div>
+    <div class="card"><b>0</b><span>Dropped designs still in the book</span></div>
+  </div>
+  <div class="pg">15</div>
+</section>
+
+<!-- 16 · A4 data -->
+<section class="slide navy">
+  <div class="label">APPENDIX A4 · DATA &amp; PROTOCOLS</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Where the data comes from, and how we keep future information out of past decisions</div>
+  <h1>Data, and how we avoid look-ahead</h1>
+  <div class="rule"></div>
+  <div class="abs" style="top:100px;left:40px;width:428px;font-size:12px;line-height:1.34"><b>Sources</b><ul class="b" style="font-size:12px;line-height:1.34;margin-top:3px"><li style="margin-bottom:2px">Prices: Yahoo Finance (equities, BTC, HYPE, USD/IDR, dollar index, gold)</li><li style="margin-bottom:2px">Two missing HYPE days filled from Hyperliquid candles</li><li style="margin-bottom:2px">Option vol: Deribit DVOL for BTC; 30-day realised for HYPE</li><li style="margin-bottom:2px">FX carry: 3.0%/yr assumed · Rates: 13-week T-bill</li></ul></div><div class="abs" style="top:100px;left:493px;width:428px;font-size:12px;line-height:1.34"><b>How we avoid look-ahead</b><ul class="b" style="font-size:12px;line-height:1.34;margin-top:3px"><li style="margin-bottom:2px">Every signal uses only data available at the close when the decision is made</li><li style="margin-bottom:2px">Trades go through at that close or the next session, depending on the sleeve</li><li style="margin-bottom:2px">Each Friday's option priced at the vol known that day</li><li style="margin-bottom:2px">One exception we cannot fix: dip and E1 use today's index members (slide 10)</li></ul></div>
+  <div class="flow" style="top:349px">
+    <div class="box"><b>SOURCES</b><span>Yahoo prices · Deribit DVOL · Hyperliquid candles · T-bill rate</span></div><div class="arr">→</div>
+    <div class="box"><b>RULES</b><span>signals from data available at the decision close; costs and carry charged per sleeve</span></div><div class="arr">→</div>
+    <div class="box"><b>OUTPUT</b><span>a Friday report: the brief's nine metrics, per sleeve and for the book</span></div>
+  </div>
+  <div class="pg">16</div>
+</section>
+
+<!-- 17 · A5 weights -->
+<section class="slide navy">
+  <div class="label">APPENDIX A5 · ALLOCATION</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Show what other weightings would have given, and why we chose ours anyway</div>
+  <h1>Why these weights (sensitivity)</h1>
+  <div class="rule"></div>
+  <div class="abs" style="top:98px;left:40px;width:881px;font-size:11.5px;line-height:1.34"><ul class="b" style="font-size:11.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">Weights reset on 31 Oct, when short IDR took the commodity sleeve's slot</li><li style="margin-bottom:0px">Risk parity (equal risk from each sleeve, on vols of 8.1% / 12.3% / 4.3% / 28.9%) would give about 26/17/49/7</li><li style="margin-bottom:0px">We moved away from that because E1's edge is fading, short IDR earns little on its own, and the wheel carries the return</li></ul></div>
+  <style>.bar { position:absolute; left:144px; height:22px; box-shadow:0 2px 3px rgba(0,0,0,.25); } .bl { position:absolute; left:40px; font-size:12px; font-weight:700; } .bv { position:absolute; font-size:11px; font-weight:700; }</style>
+  <div class="bl" style="top:177px;color:#1F3864">E1</div><div class="bar" style="top:176px;width:223px;background:#1F3864"></div><div class="bv" style="top:178px;left:378px">20%</div>
+  <div class="bl" style="top:206px;color:#B25A0E">Short IDR</div><div class="bar" style="top:204px;width:167px;background:#B05A0B"></div><div class="bv" style="top:206px;left:322px">15%</div>
+  <div class="bl" style="top:235px;color:#4A6B2A">Dip</div><div class="bar" style="top:233px;width:167px;background:#445E2E"></div><div class="bv" style="top:235px;left:322px">15%</div>
+  <div class="bl" style="top:264px;color:#5B2C8F">Wheel</div><div class="bar" style="top:262px;width:559px;background:#5B2D90"></div><div class="bv" style="top:264px;left:714px">50%</div>
+  <table class="t abs" style="top:300px;left:137px;width:685px;font-size:12.5px">
+    <tr><th>Weights (E1/Dip/IDR/Wheel)</th><th class="r">Sharpe</th><th class="r">CAGR</th><th class="r">Vol</th><th class="r">Max DD</th><th class="r">Oct 2026 (ann.)</th></tr>
+    <tr class="bold"><td>Chosen 20/15/15/50</td><td class="r">1.39</td><td class="r">21.4%</td><td class="r">14.8%</td><td class="r">−14.9%</td><td class="r">+1.42% (+18.7%)</td></tr>
+    <tr><td>Risk parity ≈26/17/49/7</td><td class="r">1.96</td><td class="r">8.1%</td><td class="r">4.0%</td><td class="r">−3.3%</td><td class="r">−0.5% (−6.2%)</td></tr>
+    <tr><td>Equal weight 25 each</td><td class="r">1.72</td><td class="r">15.0%</td><td class="r">8.3%</td><td class="r">−8.3%</td><td class="r">−0.7% (−8.3%)</td></tr>
+    <tr><td>Earlier slots 40/20/25/15</td><td class="r">1.73</td><td class="r">10.7%</td><td class="r">6.0%</td><td class="r">−4.9%</td><td class="r">−0.8% (−9.8%)</td></tr>
+  </table>
+  <div class="abs" style="top:428px;left:40px;width:881px;font-size:11.5px;line-height:1.34"><ul class="b" style="font-size:11.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:0px">Every alternative has a higher Sharpe and shallower drawdown, and every one lost money in October</li><li style="margin-bottom:0px">We give that up for the highest return and a positive October, with more riding on the wheel</li></ul></div>
+  <div class="pg">17</div>
+</section>
+
+<!-- 18 · A6 factors -->
+<section class="slide navy">
+  <div class="label">APPENDIX A6 · LECTURE: FACTOR MODELS</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Prove the four sleeves earn their returns from different sources</div>
+  <h1>Factor attribution: the four returns come from different places</h1>
+  <div class="rule"></div>
+  <style>.s1 { background:#E4E9F4 !important; } .s2 { background:#C7D3EA !important; } .s3 { background:#9DB3D9 !important; }</style>
+  <table class="t abs" style="top:112px;left:124px;width:707px;font-size:12.5px">
+    <tr><th>Weekly return betas</th><th class="r">SPX</th><th class="r">Coin</th><th class="r">Gold</th><th class="r">USD/IDR</th><th class="r">R²</th></tr>
+    <tr><td>E1</td><td class="r">+0.01</td><td class="r">−0.01</td><td class="r s1">−0.04</td><td class="r s2">−0.18</td><td class="r">0.03</td></tr>
+    <tr><td>DIP</td><td class="r s2"><b>+0.18</b></td><td class="r">+0.02</td><td class="r s1">+0.09</td><td class="r s2">+0.12</td><td class="r">0.10</td></tr>
+    <tr><td>Short IDR</td><td class="r">−0.01</td><td class="r">−0.00</td><td class="r">−0.01</td><td class="r s3"><b>+0.42</b></td><td class="r">0.46</td></tr>
+    <tr><td>Wheel</td><td class="r s2"><b>+0.25</b></td><td class="r s3"><b>+0.32</b></td><td class="r">+0.00</td><td class="r s3">+0.34</td><td class="r">0.55</td></tr>
+    <tr class="bold"><td>BOOK</td><td class="r s2"><b>+0.16</b></td><td class="r s2"><b>+0.16</b></td><td class="r">+0.00</td><td class="r s2">+0.21</td><td class="r">0.55</td></tr>
+  </table>
+  <div class="abs" style="top:299px;left:40px;right:39px;font-size:12px;line-height:1.38">
+    <p style="color:#555;font-size:10.5px">Each sleeve's weekly returns regressed on the S&amp;P 500, the wheel's coin (BTC to Jan 2025, then 70/30 HYPE/BTC), gold and USD/IDR over the common window (Apr 2021 to Oct 2026, 291 weeks). <b>Bold: |t| &gt; 2.6.</b> Darker cells mean a larger beta.</p>
+<ul class="b" style="font-size:12px;line-height:1.34;margin-top:3px"><li style="margin-bottom:3px"><b>E1 moves with none of the four</b> (R² 0.03); this is measured, not assumed</li><li style="margin-bottom:3px"><b>Book equity beta +0.16</b>: +0.13 from the wheel (0.25 × 50%), +0.03 from dip (0.18 × 15%)</li><li style="margin-bottom:3px">The wheel's coin beta is +0.32 (t = 17): it gains less than the coin when the coin rises, and the 200-day rule means it keeps less of the fall</li><li style="margin-bottom:3px">Short IDR's USD/IDR beta of +0.42 is roughly its 52% time in the market; it has no equity or crypto beta</li></ul>
+  </div>
+  <div class="pg">18</div>
+</section>
+
+<!-- 19 · A7 tails -->
+<section class="slide navy">
+  <div class="label">APPENDIX A7 · LECTURE: RISK &amp; EVT (L7)</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Measure how bad a one-in-a-hundred week is for each sleeve and for the book</div>
+  <h1>Tail risk: one-week 99% VaR and Expected Shortfall</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:112px;left:124px;width:707px;font-size:12.5px">
+    <tr><th>Losses, % of sleeve capital</th><th class="r">VaR (hist)</th><th class="r">ES (hist)</th><th class="r">VaR (EVT)</th><th class="r">ES (EVT)</th><th class="r">Tail ξ</th></tr>
+    <tr><td>E1 (20%)</td><td class="r">2.8</td><td class="r">3.8</td><td class="r">3.1</td><td class="r">3.8</td><td class="r">−0.03</td></tr>
+    <tr><td>DIP (15%)</td><td class="r">4.1</td><td class="r">6.9</td><td class="r">4.5</td><td class="r">6.7</td><td class="r">+0.13</td></tr>
+    <tr><td>Short IDR (15%)</td><td class="r">1.2</td><td class="r">1.8</td><td class="r">1.5</td><td class="r">1.9</td><td class="r">+0.00</td></tr>
+    <tr><td>Wheel (50%)</td><td class="r">11.5</td><td class="r">17.3</td><td class="r">13.2</td><td class="r">16.9</td><td class="r">−0.03</td></tr>
+    <tr class="bold"><td>BOOK</td><td class="r">5.7</td><td class="r">8.4</td><td class="r">6.6</td><td class="r">8.4</td><td class="r">−0.06</td></tr>
+  </table>
+  <div class="abs small" style="top:266px;left:40px;right:39px">Two estimates of the worst week in a hundred: the historical quantile of weekly returns, and an extreme-value fit to the worst 10% of weeks (generalised Pareto, 29 weeks; the tail index ξ is rough). Common window.</div>
+  <img class="abs" src="img/tail_es.png" style="left:40px;top:296px;width:526px">
+<div class="abs" style="top:290px;left:587px;width:334px;font-size:11.5px;line-height:1.34"><ul class="b" style="font-size:11.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:3px">The <b>wheel is the tail risk</b>: in its worst 1% of weeks it loses about 17% of its capital</li><li style="margin-bottom:3px">At 50% weight it is the book's tail</li><li style="margin-bottom:3px">Both methods agree for the book: about 8.4%</li><li style="margin-bottom:3px">Dip's tail got worse in October (−11.2% in the chip week)</li><li style="margin-bottom:3px">Worst book week: −11.5% on 21 May 2021, which would have hit the brake's stop</li></ul></div>
+  <div class="pg">19</div>
+</section>
+
+<!-- 20 · A8 cointegration -->
+<section class="slide navy">
+  <div class="label">APPENDIX A8 · LECTURE: COINTEGRATION</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Show why E1's residuals can be traded while simple stock pairs cannot</div>
+  <h1>Cointegration: a beta alone is not enough</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:108px;left:40px;width:526px">
+    <tr><th>Pair</th><th class="r">β</th><th class="r">EG p</th><th class="r">Spread HL</th></tr>
+    <tr><td>DBS vs OCBC</td><td class="r">1.20</td><td class="r">0.45</td><td class="r">107d</td></tr>
+    <tr><td>OCBC vs UOB</td><td class="r">1.29</td><td class="r">0.82</td><td class="r">285d</td></tr>
+    <tr><td>JPM vs BAC</td><td class="r">1.39</td><td class="r">0.65</td><td class="r">186d</td></tr>
+    <tr><td>XOM vs CVX</td><td class="r">1.40</td><td class="r">0.01</td><td class="r">44d</td></tr>
+    <tr><td>V vs MA</td><td class="r">0.95</td><td class="r">0.01</td><td class="r">35d</td></tr>
+    <tr><td>PG vs PEP</td><td class="r">0.96</td><td class="r">0.75</td><td class="r">153d</td></tr>
+  </table>
+  <div class="abs small" style="top:286px;left:40px;width:526px">Daily log prices of E1 names, Jan 2019 to Oct 2026. β is the slope of one log price on the other; EG p is the Engle–Granger test p-value (small means the pair is tied together); HL is how many trading days the spread takes to close half its gap.</div>
+  <img class="abs" src="img/cointegration.png" style="left:40px;top:330px;width:526px">
+<div class="abs" style="top:104px;left:583px;width:338px;font-size:11px;line-height:1.34"><b>Engle–Granger</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Only 2 of 6 pairs are tied together (XOM/CVX, V/MA, p ≈ 0.01)</li><li style="margin-bottom:1px">Even those take 35 to 44 trading days to close half the gap</li><li style="margin-bottom:1px">The bank pairs are not tied at all</li></ul></div><div class="abs" style="top:206px;left:583px;width:338px;font-size:11px;line-height:1.34"><b>Contrast, Sleeve 1</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">E1's residuals close half their gap in <b>5.5 days</b> on median (3.6 to 8.2) over 93 windows</li><li style="margin-bottom:1px">Well inside the 30-day limit: fast enough to trade</li><li style="margin-bottom:1px">A stationarity test on a single 60-day window flags only 9% of cases: it has little power on short windows</li></ul></div><div class="abs" style="top:318px;left:583px;width:338px;font-size:11px;line-height:1.34"><b>Sleeve 4, used defensively</b><ul class="b" style="font-size:11px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px">Buys only above the 200-day average</li><li style="margin-bottom:1px">2022: −1.2% while mostly in cash</li></ul></div>
+  <div class="pg">20</div>
+</section>
+
+<!-- 21 · A9 tokenomics screen -->
+<section class="slide purple">
+  <div class="label">APPENDIX A9 · TOKENOMICS SCREEN</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> The criteria that put HYPE into the wheel, and what BTC is still there for</div>
+  <h1>Why HYPE: the coin screen behind the wheel's 2025 switch</h1>
+  <div class="rule"></div>
+  <table class="t abs" style="top:102px;left:40px;width:881px;font-size:11px">
+    <tr><th style="width:170px">Criterion</th><th style="width:290px">Why it matters for a wheel</th><th style="width:220px">HYPE</th><th>BTC</th></tr>
+    <tr><td><b>1. Revenue-funded buybacks</b></td><td>The protocol's fees buy the token: a steady buyer under the price, so puts get assigned less deep</td><td>Pass: exchange fees fund ongoing HYPE buybacks</td><td>Fail: no protocol revenue</td></tr>
+    <tr><td><b>2. Low insider overhang</b></td><td>Big VC or team unlocks mean forced selling, straight into the wheel's puts</td><td>Pass: no VC round; a large share went to users at launch</td><td>Pass: no insider unlocks</td></tr>
+    <tr><td><b>3. Real usage</b></td><td>Fee-paying demand, not only speculation</td><td>Pass: a leading perpetuals exchange by volume</td><td>Store of value; no fees to the token</td></tr>
+    <tr><td><b>4. Liquidity</b></td><td>The wheel must trade weekly, at size</td><td>Pass on spot; options market still thin</td><td>Pass: the deepest crypto options market</td></tr>
+    <tr><td><b>5. Premium</b></td><td>Higher volatility means more premium per week</td><td>About twice BTC's volatility</td><td>Lower, but with a real implied-vol index (DVOL)</td></tr>
+  </table>
+  <div class="abs" style="top:318px;left:40px;width:420px;font-size:11.5px;line-height:1.34"><b>How we use it</b>
+    <ul class="b" style="font-size:11.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:2px">Pass/fail on criteria 1 to 4; criterion 5 sets the weight</li><li style="margin-bottom:2px">Jan 2025: HYPE passes all four, so it takes 70% of the wheel</li><li style="margin-bottom:2px">BTC fails buybacks but stays at 30%: deepest liquidity and a real implied-vol index</li><li style="margin-bottom:2px">Rebalanced to 70/30 each quarter with the book</li></ul></div>
+  <div class="abs" style="top:318px;left:493px;width:428px;font-size:11.5px;line-height:1.34"><b>Result and caveats</b>
+    <ul class="b" style="font-size:11.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:2px">October 2026: HYPE wheel +6.6% vs BTC wheel +2.3%; the 70/30 wheel +5.3%</li><li style="margin-bottom:2px">One screen, one date, one candidate: a judgement call, not a backtest</li><li style="margin-bottom:2px">HYPE has 22 months of history, mostly in a rising market</li><li style="margin-bottom:2px">The 30% BTC leg is the hedge against the screen being wrong</li></ul></div>
+  <div class="callout"><span><b>The screen in one line:</b>&nbsp;prefer tokens whose own revenue buys them back, with no insider supply waiting to be dumped, and hold BTC as the liquid core.</span></div>
+  <div class="pg">21</div>
+</section>
+
+<!-- 22 · A10 Monte Carlo (with_MC PDF only; numbers from outputs/montecarlo/, 30 Oct 2026 data) -->
+<section class="slide purple" id="mc">
+  <div class="label">APPENDIX A10 · MONTE CARLO FORWARD TEST</div>
+  <div class="abs" style="top:22px;right:40px;font-size:10.5px;color:#555"><b style="color:#333">Purpose:</b> Estimate the range of outcomes for the HYPE leg over the next 4 and 13 weeks</div>
+  <h1>The HYPE leg over the next 4 and 13 weeks: 2,000 forward paths</h1>
+  <div class="rule"></div>
+  <div class="cards" style="grid-template-columns:repeat(5,1fr)">
+    <div class="card"><b>74%</b><span>Paths up after 4 weeks</span></div>
+    <div class="card"><b>+4.3%</b><span>Median 4-week return</span></div>
+    <div class="card"><b>−10.6%</b><span>Bad case (5th percentile), 4 weeks</span></div>
+    <div class="card"><b>+35%/yr</b><span>Annual rate, 13-week paths</span></div>
+    <div class="card"><b>80%</b><span>Past outcomes in the 5 to 95% band</span></div>
+  </div>
+  <img class="abs" src="img/mc_fan.png" style="left:40px;top:170px;width:478px">
+  <table class="t abs" style="top:170px;left:540px;width:381px;font-size:9.5px">
+    <tr><th>Scenario</th><th class="r">4wk median</th><th class="r">4wk up</th><th class="r">13wk median</th><th class="r">13wk 5th pct</th><th class="r">Per year</th></tr>
+    <tr class="bold"><td>Base</td><td class="r">+4.3%</td><td class="r">74%</td><td class="r">+9.7%</td><td class="r">−15.5%</td><td class="r">+35%</td></tr>
+    <tr><td>Noise</td><td class="r">+3.6%</td><td class="r">70%</td><td class="r">+6.3%</td><td class="r">−19.3%</td><td class="r">+18%</td></tr>
+    <tr><td>Shock</td><td class="r">+0.2%</td><td class="r">50%</td><td class="r">−20.7%</td><td class="r">−40.9%</td><td class="r">−60%</td></tr>
+    <tr><td>History</td><td class="r">+8.8%</td><td class="r">76%</td><td class="r">+23.9%</td><td class="r">−21.9%</td><td class="r">+118%</td></tr>
+  </table>
+<div class="abs" style="top:288px;left:540px;width:381px;font-size:9.5px;line-height:1.34"><ul class="b" style="font-size:9.5px;line-height:1.34;margin-top:3px"><li style="margin-bottom:1px"><b>Paths:</b> HYPE's past daily moves, resampled in 20-day blocks (Dec 2024 to Oct 2026) and scaled to current vol</li><li style="margin-bottom:1px"><b>Start:</b> live position, short a $85.42 put, HYPE $89.96</li><li style="margin-bottom:1px"><b>Noise:</b> options priced at 0.83 to 1.0 × vol, fills at 85 to 95% of model price</li><li style="margin-bottom:1px"><b>Shock:</b> worst 7 days (−31%) replayed once</li><li style="margin-bottom:1px"><b>Calibration:</b> on 15 past dates, 80% of outcomes landed inside the 5 to 95% band (target 90%); every miss was on the upside</li></ul></div>
+  <div class="callout"><span><b>Most likely outcome: it keeps working.</b>&nbsp;74% of HYPE-leg paths are up after 4 weeks; the whole 20/15/15/50 book is up in 73% (median +2.1%). The risk is a crash week: −21% HYPE-leg median at 13 weeks in the shock case.</span></div>
+  <div class="pg">22</div>
+</section>
+
+</body>
+</html>
