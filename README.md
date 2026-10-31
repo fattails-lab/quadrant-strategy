@@ -66,10 +66,10 @@ reproduces its own outputs; the team repository is unchanged:
 | Member | Matric no. | Contribution |
 | --- | --- | --- |
 | Andrew Wiraatmaja | A0200755M | Introduction and idea behind making this portfolio; helped reviewing the backtesting results + codes, and helped create the final video for submission. |
-| Edward Sujono | A0353761B | Originated the BTC options wheel sleeve, contributed to IDX coal and nickel sleeve, reviewing codes prior to submission. |
+| Edward Sujono | A0353761B | Originated the BTC options wheel sleeve, contributed to the short IDR sleeve, reviewing codes prior to submission. |
 | Michael Alexander Japardi | A0357883J | Built the Nasdaq-100 dip buying sleeve, contributed ideas to compositions of each sleeves and combining them into the portfolio. Also tested the allocations and set the 40/20/25/15 weights, ran the backtest + live-test, produced the powerpoint and video drafts, the submission package, and the group's data entries. |
 | Victoria Vivian Chan | A0352265E | Assisted with PCA mean reversion and data analysis, testing components of the mean reversion sleeve. |
-| Wielly Halim | A0355248X | Backtesting and data analysis of PCA mean reversion, IDX coal and nickel sleeve; helped revise the presentation slides. |
+| Wielly Halim | A0355248X | Backtesting and data analysis of PCA mean reversion, short IDR sleeve; helped revise the presentation slides. |
 
 ## Live window
 The live test period runs 1 to 30 Oct 2026. The revised book's October figures
