@@ -1,0 +1,53 @@
+{
+ "metrics": {
+  "wheel_raw": {
+   "sharpe": 1.14,
+   "ann_ret%": 40.36,
+   "ann_vol%": 35.41,
+   "max_dd%": -43.42,
+   "total%": 565.16,
+   "final$": 677209
+  },
+  "wheel": {
+   "sharpe": 0.63,
+   "ann_ret%": 21.97,
+   "ann_vol%": 34.85,
+   "max_dd%": -63.29,
+   "total%": 142.77,
+   "final$": 242772
+  },
+  "wheel_always": {
+   "sharpe": 1.17,
+   "ann_ret%": 33.72,
+   "ann_vol%": 28.8,
+   "max_dd%": -28.28,
+   "total%": 420.43,
+   "final$": 519933
+  },
+  "bh": {
+   "sharpe": 0.74,
+   "ann_ret%": 47.26,
+   "ann_vol%": 63.74,
+   "max_dd%": -74.25,
+   "total%": 359.63,
+   "final$": 459627
+  }
+ },
+ "trade_stats_always": {
+  "btc": {
+   "puts_sold": 145,
+   "puts_assigned": 27,
+   "calls_sold": 147,
+   "calls_away": 26,
+   "premium": 481536.5891937637
+  },
+  "hype": {
+   "puts_sold": 55,
+   "puts_assigned": 12,
+   "calls_sold": 41,
+   "calls_away": 12,
+   "premium": 398416.17615949886
+  }
+ },
+ "switch": "2025-01-03"
+}
