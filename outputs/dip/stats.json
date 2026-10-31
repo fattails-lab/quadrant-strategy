@@ -1,0 +1,74 @@
+[
+ {
+  "label": "A_10k",
+  "start": "2024-01-01",
+  "end": "2026-10-30",
+  "capital": 10000,
+  "final_equity": 22400.64,
+  "total_return_pct": 124.01,
+  "cagr_pct": 33.0,
+  "max_dd_pct": -10.09,
+  "sharpe": 1.619,
+  "n_trades": 325,
+  "win_rate_pct": 71.1,
+  "avg_holding_days": 4.69,
+  "avg_capital_usage_pct": 15.26,
+  "total_net_pnl": 12631.67,
+  "total_commissions": 229.77,
+  "open_positions_at_end": 8,
+  "trading_days": 711,
+  "exit_mix": {
+   "profit_target": 88,
+   "rebound": 225,
+   "time": 12
+  }
+ },
+ {
+  "label": "A_100k",
+  "start": "2024-01-01",
+  "end": "2026-10-30",
+  "capital": 100000,
+  "final_equity": 243395.45,
+  "total_return_pct": 143.4,
+  "cagr_pct": 36.96,
+  "max_dd_pct": -11.59,
+  "sharpe": 1.613,
+  "n_trades": 327,
+  "win_rate_pct": 71.3,
+  "avg_holding_days": 4.69,
+  "avg_capital_usage_pct": 16.66,
+  "total_net_pnl": 146424.27,
+  "total_commissions": 384.44,
+  "open_positions_at_end": 8,
+  "trading_days": 711,
+  "exit_mix": {
+   "profit_target": 88,
+   "rebound": 227,
+   "time": 12
+  }
+ },
+ {
+  "label": "B_100k",
+  "start": "2015-01-01",
+  "end": "2026-10-30",
+  "capital": 100000,
+  "final_equity": 518872.24,
+  "total_return_pct": 418.87,
+  "cagr_pct": 14.94,
+  "max_dd_pct": -12.15,
+  "sharpe": 1.072,
+  "n_trades": 867,
+  "win_rate_pct": 69.7,
+  "avg_holding_days": 4.7,
+  "avg_capital_usage_pct": 10.58,
+  "total_net_pnl": 425354.69,
+  "total_commissions": 2623.07,
+  "open_positions_at_end": 8,
+  "trading_days": 2975,
+  "exit_mix": {
+   "profit_target": 209,
+   "rebound": 621,
+   "time": 37
+  }
+ }
+]
