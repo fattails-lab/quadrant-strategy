@@ -1,5 +1,12 @@
-numpy==1.26.4
-pandas==2.1.4
-scipy==1.11.4
-statsmodels==0.15.0
-matplotlib==3.6.3
+numpy
+pandas
+scipy
+matplotlib
+requests
+statsmodels
+arch
+yfinance
+lxml
+pypdf
+jupyter
+pymupdf
