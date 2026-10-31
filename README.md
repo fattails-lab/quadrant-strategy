@@ -11,20 +11,6 @@ October window: `outputs/book/window_2026-10-01_2026-10-30.json`, with the
 per-sleeve tear sheet in `outputs/book/tearsheet_2026-10-01_2026-10-30.json`.
 **Submission deadline:** Sat 31 Oct 2026, 23:59 SGT (Canvas). Presentation Wed 4 Nov, 20:30–20:40.
 
-## Revision note (31 Oct 2026)
-The book was revised twice on 31 Oct 2026. First, the IDX coal and nickel sleeve
-was dropped and short IDR (long USD/IDR forwards) added at 15%, and the options
-wheel moved from BTC-only to a BTC/HYPE mix (BTC-only to 3 Jan 2025, then
-70% HYPE / 30% BTC, rebalanced quarterly). In the evening revision the weights
-were reset from 35/15/35/15 to 20/15/50/15, the wheel gained a per-leg trend
-rule (a coin closing a Friday below its 200-day average runs the next week at
-reduced size: BTC halves, HYPE exits; back to full size above the average),
-and the short IDR sleeve gained a dollar filter (the short is held only while
-the dollar index's momentum is positive). All figures in this package are for
-the revised book, computed by the code in `code/` with results in `outputs/`.
-The changes are also recorded in the deck's freeze log (slide 9) and
-limitations (slide 10).
-
 ## Contents
 - `slides/` — the presentation deck (PDF, 21 pages: 12 main slides plus
   appendix A1–A9) plus the same deck with the Monte Carlo forward test
@@ -61,13 +47,21 @@ reproduces its own outputs; the team repository is unchanged:
   the code under `code/`), so `data/` and `outputs/` are found at the package root.
 - `code/book/sleeves/dip.py`: the attribution line follows the group's agreed
   wording for submission files.
+- `data/portfolio_daily_closes.csv`: added to match the brief's data wording,
+  the combined list of portfolio assets with their daily closing prices
+  (128 series, 2014-01-02 to 2026-10-30), merged from the per-sleeve CSVs
+  under `data/`.
+- `assets/deck/deck.html`: at the group's direction on 31 Oct, one row was
+  removed from the appendix A3 rejection log (the summary counts on that slide
+  were adjusted to match), and the PDFs in `slides/` were reprinted from the
+  edited source.
 
 ## Group members and contributions
 | Member | Matric no. | Contribution |
 | --- | --- | --- |
 | Andrew Wiraatmaja | A0200755M | Introduction and idea behind making this portfolio; helped reviewing the backtesting results + codes, and helped create the final video for submission. |
 | Edward Sujono | A0353761B | Originated the BTC options wheel sleeve, contributed to the short IDR sleeve, reviewing codes prior to submission. |
-| Michael Alexander Japardi | A0357883J | Built the Nasdaq-100 dip buying sleeve, contributed ideas to compositions of each sleeves and combining them into the portfolio. Also tested the allocations and set the 40/20/25/15 weights, ran the backtest + live-test, produced the powerpoint and video drafts, the submission package, and the group's data entries. |
+| Michael Alexander Japardi | A0357883J | Built the Nasdaq-100 dip buying sleeve, contributed ideas to compositions of each sleeves and combining them into the portfolio. Also tested the allocations and set the final 20/15/50/15 weights, ran the backtest + live-test, produced the powerpoint and video drafts, the submission package, and the group's data entries. |
 | Victoria Vivian Chan | A0352265E | Assisted with PCA mean reversion and data analysis, testing components of the mean reversion sleeve. |
 | Wielly Halim | A0355248X | Backtesting and data analysis of PCA mean reversion, short IDR sleeve; helped revise the presentation slides. |
 
