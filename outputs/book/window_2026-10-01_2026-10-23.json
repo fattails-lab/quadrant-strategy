@@ -1,0 +1,32 @@
+{
+ "start": "2026-10-01",
+ "end": "2026-10-23",
+ "days": 23,
+ "summary": {
+  "e1": {
+   "return%": -1.3,
+   "annualised%": -18.75,
+   "weight%": 20.0
+  },
+  "dip": {
+   "return%": -9.18,
+   "annualised%": -78.32,
+   "weight%": 15.0
+  },
+  "wheel": {
+   "return%": 4.61,
+   "annualised%": 104.33,
+   "weight%": 50.0
+  },
+  "fx": {
+   "return%": 1.56,
+   "annualised%": 27.9,
+   "weight%": 15.0
+  },
+  "book": {
+   "return%": 0.9,
+   "annualised%": 15.27,
+   "weight%": NaN
+  }
+ }
+}
